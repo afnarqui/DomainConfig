@@ -1,0 +1,49 @@
+version: '3'
+
+services:
+  cockroachdb:
+    image: cockroachdb/cockroach
+    command: start --insecure
+    expose:
+     - "8080"
+     - "26257"
+    ports:
+     - "26257:26257"
+     - "8080:8080"
+    networks:
+     - roachnet
+  cockroachdb-1:
+    image: cockroachdb/cockroach
+    command: start --insecure --join=cockroachdb
+    networks:
+     - roachnet
+    volumes:
+     - ./data/cockroachdb-1:/cockroach/cockroach-data
+  cockroachdb-init:
+   image: cockroachdb/cockroach
+   networks:
+    - roachnet
+   volumes:
+     - ./setup_db.sh:/setup_db.sh
+   entrypoint: "/bin/bash"
+   command: /setup_db.sh
+  golang:
+    container_name: golang
+    build: .
+    command: go run main.go
+    volumes:
+      - ./:/go/src/app
+    working_dir: /go/src/app
+    ports:
+     - "3000:3000"
+     - "3001:3001"
+     - "8001:8001"
+    environment:
+      PORT: 3001
+      PORT: 8001
+    links:
+    - cockroachdb
+    networks:
+    - roachnet
+networks:
+  roachnet:
