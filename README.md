@@ -67,6 +67,13 @@ cd $GOPATH/src/github.com/afnarqui
 cockroach start --insecure
 ```
 
+## execute query in the data base
+```
+docker exec -it go bash
+cockroach sql --insecure
+select * from domain;
+```
+
 ## migration of data base
 ```
 go run migration.go
