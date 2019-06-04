@@ -6,7 +6,7 @@
 
 DomainConfig is a aplication, for service that allows to get information about the domains. developed in cockroachdb, golang , vue, with docker-compose
 
-ApiRest
+[Api](https://documenter.getpostman.com/view/7654104/S1TX1cS4) Api Rest
 
 [trello](https://trello.com/b/7m0X9oVl/domainconfig) Trello
 
@@ -80,6 +80,10 @@ go run migration.go
 ```
 ## execute front-end
 ```
+npm install --global vue-cli
+vue init webpack vue
+npm run dev
+npm run build
 cd vue
 npm run build
 copy folder dist in folder public
