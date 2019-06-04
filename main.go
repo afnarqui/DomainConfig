@@ -203,6 +203,7 @@ type Endpoints struct {
 
 type Endpointss []Endpoints
 
+
 func (n *Domain) GetAllDomain() ([]Domain, error) {
 	db := GetConnection()
 	Host = "'"+Host+"'"
@@ -358,7 +359,30 @@ func (n Domain) DeleteDomain() error {
 	
 			if iolddomain != 1 {
 			return errors.New("Should error rows olddomain")
-			}		
+			}	
+			qhistorydomain := `INSERT INTO 
+			domainhistory(host,port,protocol,ispublic,status)
+							VALUES ($1,$2,$3,$4,$5)`
+		
+				dbhistorydomain := GetConnection()
+				defer dbhistorydomain.Close()
+		
+				stmthistorydomain, errhistorydomain := dbhistorydomain.Prepare(qhistorydomain)
+		
+				if errhistorydomain != nil {
+				return errhistorydomain
+				}
+				defer stmthistorydomain.Close()
+				rhistorydomain, errhistorydomain := stmthistorydomain.Exec(host,portolddomain,protocololddomain,isPublicolddomain,statusolddomain)
+				if errhistorydomain != nil {
+				return errhistorydomain
+				}
+		
+				ihistorydomain, _ := rhistorydomain.RowsAffected()
+		
+				if ihistorydomain != 1 {
+				return errors.New("Should error rows historydomain")
+				}			
 
 	return nil
 }
