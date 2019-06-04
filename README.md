@@ -60,7 +60,16 @@ docker rmi -f domainconfig_golang
 
 ## pull image
 ```
-docker pull afnarqui/govuecockroachdb
+docker pull afnarqui/godep:v12
+docker run --name volumen -v c:/Users/afnarqui/proyectos:/local busybox
+docker run --name go --volumes-from volumen -v c:/Users/afnarqui/proyectos:/local -it -p 26257:26257 -p 8080:8080 afnarqui/godep:v12 bash
+cd $GOPATH/src/github.com/afnarqui
+cockroach start --insecure
+```
+
+## migration of data base
+```
+go run migration.go
 ```
 
 
