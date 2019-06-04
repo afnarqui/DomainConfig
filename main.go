@@ -20,11 +20,12 @@ var db *sql.DB
 var domainnew = Domain{}
 var domainold = Domain{}
 var responsedatasearch = []Domain{}
+var responsedatasearchcomparar = []Domaincomparar{}
 func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", IndexHandler)
 	
-	log.Println("Corriendo en http://localhost:8001")
+	log.Println("Running in http://localhost:8001")
 	r := chi.NewRouter()
 
 	r.Get("/public", func(w http.ResponseWriter, r *http.Request) {
@@ -129,7 +130,7 @@ func main() {
 		json.NewEncoder(w).Encode(domainnew)
 })
 
-r.Get("/buscardomain", func(w http.ResponseWriter, r *http.Request) {
+r.Get("/searchdomain", func(w http.ResponseWriter, r *http.Request) {
 	(w).Header().Set("Access-Control-Allow-Origin", "*")
 	(w).Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 	n := new(Domain)
@@ -158,10 +159,40 @@ r.Get("/buscardomain", func(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(responsedatasearch)
 })
 
+r.Get("/searchdomaincomparar", func(w http.ResponseWriter, r *http.Request) {
+
+	(w).Header().Set("Access-Control-Allow-Origin", "*")
+	(w).Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+	n := new(Domaincomparar)
+	domain, err := n.GetDomaincomparar()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+	dataDomain, err := json.Marshal(domain)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	responsedata:= []Domaincomparar{}
+
+	errrs := json.Unmarshal([]byte(dataDomain), &responsedata)
+	if errrs != nil {
+		fmt.Println(errrs)
+	}
+	fmt.Println(responsedata)
+	if len(responsedata) > 0 {
+		responsedatasearchcomparar = responsedata
+	} else {
+	}
+	json.NewEncoder(w).Encode(responsedatasearchcomparar)
+})
+
 }
 
 func IndexHandler(w http.ResponseWriter, r *http.Request) {
-	direccion := ":8081" 
+	direccion := ":8001" 
 	fmt.Println("Server listing in " + direccion)
 
 	log.Fatal(http.ListenAndServe(direccion+"/public/index.html", nil))
@@ -233,6 +264,21 @@ type Endpoints struct {
 }
 
 type Endpointss []Endpoints
+
+type Domaincomparar struct {
+	Host            string      `json:"host"`
+	Port            int         `json:"port"`
+	Protocol        string      `json:"protocol"`
+	IsPublic        bool        `json:"isPublic"`
+	Status          string      `json:"status"`
+	Endpoints       []Endpoints `json:"endpoints"`
+	Hostold            string      `json:"hostold"`
+	Portold            int         `json:"portold"`
+	Protocolold        string      `json:"protocolold"`
+	IsPublicold        bool        `json:"isPublicold"`
+	Statusold          string      `json:"statusold"`
+	Endpointsold       []Endpoints `json:"endpointsold"`
+}
 
 
 func (n *Domain) GetAllDomain() ([]Domain, error) {
@@ -439,3 +485,24 @@ func (n *Domain) GetDomain() ([]Domain, error) {
 	return bks, nil 
 }
 
+func (n *Domaincomparar) GetDomaincomparar() ([]Domaincomparar, error) {
+	db := GetConnection()
+	
+	q := "select domain.host as host,domainold.host as hostold,domain.port as port,domainold.port as portold FROM domain inner join domainold on domainold.host=domain.host"
+	
+	rows, err := db.Query(q)
+	if err != nil {
+		return []Domaincomparar{}, err
+	}
+	defer rows.Close()
+	bks := make([]Domaincomparar, 0)
+	for rows.Next() {
+		bk := Domaincomparar{}
+		err := rows.Scan(&bk.Host,&bk.Hostold ,&bk.Port,&bk.Portold) 
+		if err != nil {
+			panic(err)
+		}
+		bks = append(bks, bk)
+	}
+	return bks, nil 
+}
