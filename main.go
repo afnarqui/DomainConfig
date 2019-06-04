@@ -13,6 +13,7 @@ import (
 	"io/ioutil"
 	"encoding/json"
 	"errors"
+	"path/filepath"
 )
 
 var Host string
@@ -30,11 +31,11 @@ func main() {
 
 	r.Get("/public", func(w http.ResponseWriter, r *http.Request) {
 
-		nombre := r.URL.Query().Get("nombre")
+		name := r.URL.Query().Get("name")
 		
 		(w).Header().Set("Access-Control-Allow-Origin", "*")
 		(w).Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
-		url := "https://api.ssllabs.com/api/v3/analyze?host="+nombre
+		url := "https://api.ssllabs.com/api/v3/analyze?host="+name
 		        
 		response, err := http.Get(url)
 
@@ -189,40 +190,12 @@ r.Get("/searchdomaincomparar", func(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(responsedatasearchcomparar)
 })
 
-}
+	workDir, _ := os.Getwd()
+	filesDir := filepath.Join(workDir, "public")
+	FileServer(r, "/", http.Dir(filesDir))
 
-func IndexHandler(w http.ResponseWriter, r *http.Request) {
-	direccion := ":8001" 
-	fmt.Println("Server listing in " + direccion)
+	http.ListenAndServe(":8001", r)
 
-	log.Fatal(http.ListenAndServe(direccion+"/public/index.html", nil))
-	
-}
-
-func Logger() http.Handler {
-    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-        fmt.Println(time.Now(), r.Method, r.URL)
-        router.ServeHTTP(w, r) 
-    })
-}
-var router *chi.Mux
-
-func FileServer(r chi.Router, path string, root http.FileSystem) {
-	if strings.ContainsAny(path, "{}*") {
-		panic("FileServer does not permit URL parameters.")
-	}
-
-	fs := http.StripPrefix(path, http.FileServer(root))
-
-	if path != "/" && path[len(path)-1] != '/' {
-		r.Get(path, http.RedirectHandler(path+"/", 301).ServeHTTP)
-		path += "/"
-	}
-	path += "*"
-
-	r.Get(path, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fs.ServeHTTP(w, r)
-	}))
 }
 
 func GetConnection() *sql.DB {
@@ -505,4 +478,38 @@ func (n *Domaincomparar) GetDomaincomparar() ([]Domaincomparar, error) {
 		bks = append(bks, bk)
 	}
 	return bks, nil 
+}
+
+func Logger() http.Handler {
+    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+        fmt.Println(time.Now(), r.Method, r.URL)
+        router.ServeHTTP(w, r) 
+    })
+}
+var router *chi.Mux
+
+func FileServer(r chi.Router, path string, root http.FileSystem) {
+	if strings.ContainsAny(path, "{}*") {
+		panic("FileServer does not permit URL parameters.")
+	}
+
+	fs := http.StripPrefix(path, http.FileServer(root))
+
+	if path != "/" && path[len(path)-1] != '/' {
+		r.Get(path, http.RedirectHandler(path+"/", 301).ServeHTTP)
+		path += "/"
+	}
+	path += "*"
+
+	r.Get(path, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fs.ServeHTTP(w, r)
+	}))
+}
+
+func IndexHandler(w http.ResponseWriter, r *http.Request) {
+	direccion := ":8001" 
+	fmt.Println("server listening in " + direccion)
+
+	log.Fatal(http.ListenAndServe(direccion+"/public/index.html", nil))
+	
 }
