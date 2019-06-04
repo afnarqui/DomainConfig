@@ -77,8 +77,6 @@ export default {
           let data = JSON.stringify(dominios)
           let datanew = `[${data}]`
           self.postsnew = JSON.parse(datanew)
-          console.log(self.postsnew)
-          console.log(JSON.parse(data))
           self.posts = JSON.parse(data)
         })
     .catch((e) => {

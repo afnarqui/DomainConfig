@@ -78,6 +78,12 @@ select * from domain;
 ```
 go run migration.go
 ```
+## execute front-end
+```
+cd vue
+npm run build
+copy folder dist in folder public
+```
 
 
 [afn]: <https://github.com/afnarqui/DomainConfig>

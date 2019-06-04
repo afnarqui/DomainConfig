@@ -3,8 +3,9 @@
     toggleable="md"
     type="dark"
     variant="info">
-    <b-navbar-brand :to="{ name: 'Domain' }">Domain</b-navbar-brand>
+    <b-navbar-brand :to="{ name: 'Domainall' }">Domain All</b-navbar-brand>
     <b-navbar-nav>
+      <b-navbar-brand :to="{ name: 'Domain' }">Domain</b-navbar-brand>
     </b-navbar-nav>
   </b-navbar>
 </template>
