@@ -19,6 +19,7 @@ var Host string
 var db *sql.DB
 var domainnew = Domain{}
 var domainold = Domain{}
+var responsedatasearch = []Domain{}
 func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", IndexHandler)
@@ -127,6 +128,36 @@ func main() {
 		}
 		json.NewEncoder(w).Encode(domainnew)
 })
+
+r.Get("/buscardomain", func(w http.ResponseWriter, r *http.Request) {
+	(w).Header().Set("Access-Control-Allow-Origin", "*")
+	(w).Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+	n := new(Domain)
+	domain, err := n.GetDomain()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+	dataDomain, err := json.Marshal(domain)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	responsedata:= []Domain{}
+
+	errrs := json.Unmarshal([]byte(dataDomain), &responsedata)
+	if errrs != nil {
+		fmt.Println(errrs)
+	}
+	if len(responsedata) > 0 {
+		fmt.Println("print")
+		responsedatasearch = responsedata
+	} else {
+	}
+	json.NewEncoder(w).Encode(responsedatasearch)
+})
+
 }
 
 func IndexHandler(w http.ResponseWriter, r *http.Request) {
@@ -385,5 +416,26 @@ func (n Domain) DeleteDomain() error {
 				}			
 
 	return nil
+}
+
+func (n *Domain) GetDomain() ([]Domain, error) {
+	db := GetConnection()
+	
+	q := "SELECT host,port FROM domain"
+	rows, err := db.Query(q)
+	if err != nil {
+		return []Domain{}, err
+	}
+	defer rows.Close()
+	bks := make([]Domain, 0)
+	for rows.Next() {
+		bk := Domain{}
+		err := rows.Scan(&bk.Host, &bk.Port) 
+		if err != nil {
+			panic(err)
+		}
+		bks = append(bks, bk)
+	}
+	return bks, nil 
 }
 
