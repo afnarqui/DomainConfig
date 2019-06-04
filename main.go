@@ -284,6 +284,24 @@ func (n Domain) DeleteDomain() error {
 		return errors.New("fatal errors")
 	}
 
+	dbdomainold := GetConnection()
+
+	qdomainold := `DELETE FROM domainold
+		WHERE host=$1`
+	stmtdomainold, errdomainold := dbdomainold.Prepare(qdomainold)
+	if errdomainold != nil {
+		return errdomainold
+	}
+	defer stmtdomainold.Close()
+
+	rdomainold, errdomainold := stmtdomainold.Exec(host)
+	if errdomainold != nil {
+		return errdomainold
+	}
+	if idomainold, errdomainold := rdomainold.RowsAffected(); errdomainold != nil || idomainold != 1 {
+		return errors.New("fatal errors")
+	}
+
 	var portnewdomain = domainnew.Port
 	var protocolnewdomain = domainnew.Protocol 
 	var isPublicnewdomain = domainnew.IsPublic 
@@ -312,6 +330,35 @@ func (n Domain) DeleteDomain() error {
 		if inewdomain != 1 {
 		return errors.New("Should error rows newdomain")
 		}
+
+		var portolddomain = domainold.Port
+		var protocololddomain = domainold.Protocol 
+		var isPublicolddomain = domainold.IsPublic 
+		var statusolddomain = domainold.Status
+	
+		qolddomain := `INSERT INTO 
+		domainold(host,port,protocol,ispublic,status)
+		VALUES ($1,$2,$3,$4,$5)`
+
+			dbolddomain := GetConnection()
+			defer dbolddomain.Close()
+	
+			stmtolddomain, errolddomain := dbolddomain.Prepare(qolddomain)
+	
+			if errolddomain != nil {
+			return errolddomain
+			}
+			defer stmtolddomain.Close()
+			rolddomain, errolddomain := stmtolddomain.Exec(host,portolddomain,protocololddomain,isPublicolddomain,statusolddomain)
+			if errolddomain != nil {
+			return errolddomain
+			}
+	
+			iolddomain, _ := rolddomain.RowsAffected()
+	
+			if iolddomain != 1 {
+			return errors.New("Should error rows olddomain")
+			}		
 
 	return nil
 }
