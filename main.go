@@ -313,7 +313,10 @@ func (n Domain) CreateDomain() error {
 	return nil
 }
 
+
+
 func (n Domain) DeleteDomain() error {
+
 
 	dbdomain := GetConnection()
 
@@ -323,16 +326,16 @@ func (n Domain) DeleteDomain() error {
 		WHERE host=$1`
 	stmtdomain, errdomain := dbdomain.Prepare(qdomain)
 	if errdomain != nil {
-		return errdomain
+		// return errdomain
 	}
 	defer stmtdomain.Close()
 
 	rdomain, errdomain := stmtdomain.Exec(host)
 	if errdomain != nil {
-		return errdomain
+		// return errdomain
 	}
 	if idomain, errdomain := rdomain.RowsAffected(); errdomain != nil || idomain != 1 {
-		return errors.New("fatal errors")
+		//return errors.New("ERROR: Se esperaba una fila afectada")
 	}
 
 	dbdomainold := GetConnection()
@@ -341,16 +344,16 @@ func (n Domain) DeleteDomain() error {
 		WHERE host=$1`
 	stmtdomainold, errdomainold := dbdomainold.Prepare(qdomainold)
 	if errdomainold != nil {
-		return errdomainold
+		//return errdomainold
 	}
 	defer stmtdomainold.Close()
 
 	rdomainold, errdomainold := stmtdomainold.Exec(host)
 	if errdomainold != nil {
-		return errdomainold
+		//return errdomainold
 	}
 	if idomainold, errdomainold := rdomainold.RowsAffected(); errdomainold != nil || idomainold != 1 {
-		return errors.New("fatal errors")
+		//return errors.New("ERROR: Se esperaba una fila afectada")
 	}
 
 	var portnewdomain = domainnew.Port
@@ -371,6 +374,7 @@ func (n Domain) DeleteDomain() error {
 		}
 		defer stmtnewdomain.Close()
 		
+		
 		rnewdomain, errnewdomain := stmtnewdomain.Exec(host,portnewdomain,protocolnewdomain,isPublicnewdomain,statusnewdomain)
 		if errnewdomain != nil {
 		return errnewdomain
@@ -382,11 +386,11 @@ func (n Domain) DeleteDomain() error {
 		return errors.New("Should error rows newdomain")
 		}
 
+
 		var portolddomain = domainold.Port
 		var protocololddomain = domainold.Protocol 
 		var isPublicolddomain = domainold.IsPublic 
 		var statusolddomain = domainold.Status
-	
 		qolddomain := `INSERT INTO 
 		domainold(host,port,protocol,ispublic,status)
 		VALUES ($1,$2,$3,$4,$5)`
@@ -409,7 +413,8 @@ func (n Domain) DeleteDomain() error {
 	
 			if iolddomain != 1 {
 			return errors.New("Should error rows olddomain")
-			}	
+			}		
+
 			qhistorydomain := `INSERT INTO 
 			domainhistory(host,port,protocol,ispublic,status)
 							VALUES ($1,$2,$3,$4,$5)`
@@ -432,7 +437,8 @@ func (n Domain) DeleteDomain() error {
 		
 				if ihistorydomain != 1 {
 				return errors.New("Should error rows historydomain")
-				}			
+				}		
+	
 
 	return nil
 }
